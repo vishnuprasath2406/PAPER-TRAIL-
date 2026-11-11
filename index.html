@@ -3,123 +3,195 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chat with PDF – Step 1: Load &amp; Extract</title>
+<meta name="theme-color" content="#c7d2ac">
+<title>Papertrail – Chat with your PDF</title>
 <style>
-:root{--bg:#f7f6f2;--card:#fff;--text:#1d1d1b;--muted:#6b6a65;--line:#e3e1d9;--accent:#c2410c;--accent-bg:#fff1e8;--ok:#15803d;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--card:#222220;--text:#efeee9;--muted:#a09f98;--line:#383835;--accent:#fb923c;--accent-bg:#33231a;--ok:#4ade80;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#171716;--card:#222220;--text:#efeee9;--muted:#a09f98;--line:#383835;--accent:#fb923c;--accent-bg:#33231a;--ok:#4ade80;color-scheme:dark}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+:root{--sage:#c7d2ac;--sage2:#b5c391;--ink:#1f2a1c;--paper:#f7f4ea;--muted:#55604a;--line:rgba(31,42,28,.25);--rust:#c4622d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
-.wrap{max-width:820px;margin:0 auto;padding:28px 18px 60px}
-h1{font-size:1.7rem;margin:.2em 0 .3em;letter-spacing:-.02em}
-p.sub{color:var(--muted);margin:0 0 22px}
-.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:22px}
-.steps div{flex:1 0 auto;font-size:.78rem;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--card);white-space:nowrap}
-.steps .on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-.drop{border:2px dashed var(--line);border-radius:14px;background:var(--card);padding:36px 18px;text-align:center;cursor:pointer;transition:.15s}
-.drop.over,.drop:hover{border-color:var(--accent);background:var(--accent-bg)}
-.drop b{display:block;font-size:1.05rem;margin-bottom:4px}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:var(--sage);color:var(--ink);font:17px/1.6 "Helvetica Neue",Helvetica,Arial,sans-serif;overflow-x:hidden}
+.serif{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.02em}
+.eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+nav{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:rgba(199,210,172,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav b{font:400 1.5rem Georgia,serif;letter-spacing:-.03em}
+nav a{color:var(--ink);text-decoration:none;font-size:.85rem;margin-left:20px}
+.btn{display:inline-block;background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:13px 26px;font:600 .95rem inherit;font-family:inherit;cursor:pointer;text-decoration:none;transition:.2s}
+.btn:hover{transform:translateY(-2px);background:#33452e}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+/* hero */
+.hero{position:relative;min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:70px 24px 90px;max-width:1100px;margin:0 auto}
+.hero h1{font-size:clamp(2.6rem,8.5vw,6.2rem);line-height:.98;margin:.2em 0 .35em;max-width:11em;position:relative;z-index:2}
+.hero p{max-width:30em;color:var(--muted);position:relative;z-index:2}
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;position:relative;z-index:2}
+.pills span{font-size:.78rem;border:1px solid var(--ink);border-radius:999px;padding:4px 12px}
+.sky{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sheet{position:absolute;width:var(--w,90px);height:calc(var(--w,90px)*1.3);background:var(--paper);border-radius:3px;box-shadow:0 14px 30px rgba(31,42,28,.22);padding:12px 10px;animation:fly var(--d,12s) ease-in-out infinite;animation-delay:var(--l,0s);transform:rotate(var(--r,0deg))}
+.sheet i{display:block;height:4px;background:var(--line);margin-bottom:7px;border-radius:2px}
+.sheet i:nth-child(3n){width:60%}
+.sheet em{position:absolute;left:-12px;top:-14px;background:var(--rust);color:#fff;font:600 .62rem/1 inherit;font-family:inherit;font-style:normal;padding:5px 8px;border-radius:999px;white-space:nowrap}
+@keyframes fly{0%,100%{translate:0 0;rotate:0deg}25%{translate:18px -34px;rotate:5deg}50%{translate:-14px -12px;rotate:-4deg}75%{translate:10px -40px;rotate:3deg}}
+/* sections */
+section{padding:80px 24px;max-width:1100px;margin:0 auto}
+section h2{font-size:clamp(2rem,5vw,3.4rem);line-height:1.05;margin:.2em 0 .5em}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-top:30px}
+.step{background:var(--paper);border-radius:16px;padding:20px;position:relative}
+.step small{font:400 2.4rem Georgia,serif;color:var(--sage2);display:block;line-height:1}
+.step h3{margin:.4em 0 .2em;font-size:1.05rem}
+.step p{margin:0;font-size:.88rem;color:var(--muted)}
+.step.soon{opacity:.55}
+.step.on{outline:2.5px solid var(--ink)}
+/* tool */
+.tool{background:var(--paper);border-radius:28px;padding:34px 26px;margin-top:10px}
+.drop{display:block;border:2px dashed var(--ink);border-radius:20px;padding:44px 18px;text-align:center;cursor:pointer;transition:.2s;background:repeating-linear-gradient(0deg,transparent 0 31px,rgba(31,42,28,.07) 31px 32px)}
+.drop:hover,.drop.over{background-color:var(--sage);transform:rotate(-.6deg) scale(1.01)}
+.drop b{font:400 1.7rem Georgia,serif;display:block}
 .drop span{color:var(--muted);font-size:.9rem}
 input[type=file]{display:none}
-.stats{display:none;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:20px 0}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.stat small{color:var(--muted);display:block;font-size:.75rem}
-.stat strong{font-size:1.25rem}
-.bar{display:none;height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:16px}
-.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
-.msg{margin-top:14px;font-size:.92rem;color:var(--muted)}
-.msg.err{color:#dc2626}
-.pages{margin-top:6px}
-.page{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
-.page summary{cursor:pointer;padding:11px 14px;font-weight:600;display:flex;justify-content:space-between;gap:10px;list-style:none}
+.bar{display:none;height:8px;background:var(--sage);border-radius:8px;overflow:hidden;margin-top:18px}
+.bar i{display:block;height:100%;width:0;background:var(--ink);transition:width .15s}
+.msg{margin-top:12px;font-size:.9rem;color:var(--muted)}.msg.err{color:#b3261e;font-weight:600}
+.stats{display:none;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:24px 0}
+.stat{border-top:1.5px solid var(--ink);padding-top:8px}
+.stat small{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.stat strong{font:400 2rem Georgia,serif}
+.warn{display:none;background:var(--rust);color:#fff;border-radius:12px;padding:10px 14px;font-size:.88rem;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.page{border-bottom:1px solid var(--line)}
+.page summary{cursor:pointer;padding:10px 2px;display:flex;justify-content:space-between;list-style:none;font-weight:600}
 .page summary::-webkit-details-marker{display:none}
-.page summary span{color:var(--muted);font-weight:400;font-size:.82rem}
-.page pre{margin:0;padding:0 14px 14px;white-space:pre-wrap;word-wrap:break-word;font:.86rem/1.55 ui-monospace,Menlo,Consolas,monospace;max-height:340px;overflow:auto}
-.warn{background:var(--accent-bg);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;font-size:.88rem;margin-top:14px;display:none}
-.actions{display:none;gap:10px;margin:8px 0 14px;flex-wrap:wrap}
-button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 14px;border-radius:10px;cursor:pointer}
-button.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-.note{margin-top:30px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.page summary span{font-weight:400;color:var(--muted);font-size:.8rem}
+.page pre{margin:0 0 12px;white-space:pre-wrap;word-wrap:break-word;font:.82rem/1.55 ui-monospace,Menlo,Consolas,monospace;max-height:300px;overflow:auto;background:#fff;padding:12px;border-radius:10px}
+.cut{display:none;margin-top:44px;padding-top:30px;border-top:2px dashed var(--ink);position:relative}
+.cut:before{content:"✂";position:absolute;top:-17px;left:22px;background:var(--paper);padding:0 8px;font-size:1.5rem}
+.ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin:14px 0 22px}
+.ctrl label{font-size:.85rem;color:var(--muted)}.ctrl b{color:var(--ink)}
+.ctrl input{width:100%;accent-color:var(--ink)}
+.tl{position:relative;height:46px;background:var(--sage);border-radius:10px;overflow:hidden;margin:6px 0 4px}
+.tl .seg{position:absolute;top:0;bottom:0;border-right:2px dashed var(--paper)}
+.tl .seg:nth-child(odd){background:var(--sage2)}
+.tl .tick{position:absolute;bottom:2px;font-size:.6rem;color:var(--ink);padding-left:3px;border-left:1px solid var(--ink);height:14px;line-height:14px}
+.tlcap{font-size:.75rem;color:var(--muted);margin-bottom:20px}
+.slips{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.slip{background:#fff;padding:14px 14px 12px;box-shadow:0 8px 18px rgba(31,42,28,.14);position:relative;
+clip-path:polygon(0 6px,4% 0,8% 6px,12% 0,16% 6px,20% 0,24% 6px,28% 0,32% 6px,36% 0,40% 6px,44% 0,48% 6px,52% 0,56% 6px,60% 0,64% 6px,68% 0,72% 6px,76% 0,80% 6px,84% 0,88% 6px,92% 0,96% 6px,100% 0,100% 100%,0 100%);
+animation:drop .6s cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--dl,0s);transform:rotate(var(--rt,0deg))}
+.slip:nth-child(3n){--rt:1.2deg}.slip:nth-child(3n+1){--rt:-1deg}
+@keyframes drop{from{opacity:0;translate:0 -50px;rotate:-8deg}to{opacity:1;translate:0 0;rotate:0deg}}
+.slip .m{display:flex;justify-content:space-between;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:8px 0 6px}
+.slip .m b{color:var(--rust)}
+.slip p{margin:0;font:.82rem/1.5 Georgia,serif;max-height:120px;overflow:auto}
+footer{text-align:center;padding:50px 24px 70px;font-size:.82rem;color:var(--muted)}
+footer .serif{font-size:1.8rem;color:var(--ink);display:block;margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){.sheet,.slip{animation:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Chat with PDF</h1>
-  <p class="sub">Step 1 of 7: load your PDF and extract its text, page by page.</p>
+<nav><b>Papertrail</b><div><a href="#how">How it works</a><a href="#try">Try it</a></div></nav>
 
-  <div class="steps" aria-label="Progress">
-    <div class="on">1 Load &amp; extract</div><div>2 Chunk</div><div>3 Embed</div><div>4 Store</div><div>5 Retrieve</div><div>6 Generate</div><div>7 Chat UI</div>
+<header class="hero">
+  <div class="sky" aria-hidden="true">
+    <div class="sheet" style="--w:110px;right:12%;top:12%;--d:11s;--r:8deg"><em>Page 12</em><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sheet" style="--w:80px;right:30%;top:58%;--d:14s;--l:-3s;--r:-10deg"><em>Clause 4.2</em><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sheet" style="--w:96px;right:4%;top:55%;--d:13s;--l:-6s;--r:5deg"><em>Table 3</em><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="sheet" style="--w:64px;right:44%;top:10%;--d:10s;--l:-2s;--r:-6deg"><i></i><i></i><i></i><i></i></div>
+    <div class="sheet" style="--w:70px;right:22%;top:30%;--d:15s;--l:-8s;--r:12deg"><em>Abstract</em><i></i><i></i><i></i><i></i></div>
   </div>
+  <div class="eyebrow">Chat with your PDF</div>
+  <h1 class="serif">Paper leaves traces. Now you can read them.</h1>
+  <p>Drop in a document and we cut it into small, page-aware pieces your AI can search, so every answer points back to the exact page it came from.</p>
+  <div class="row" style="position:relative;z-index:2;margin-top:28px"><a class="btn" href="#try">Cut your PDF</a><a class="btn ghost" href="#how">How it works</a></div>
+  <div class="pills"><span>Runs in your browser</span><span>Page numbers kept</span><span>Overlapping chunks</span></div>
+</header>
 
-  <label class="drop" id="drop" for="file">
-    <b>Drop a PDF here, or tap to choose</b>
-    <span>Everything is processed in your browser. Nothing is uploaded.</span>
-  </label>
-  <input type="file" id="file" accept="application/pdf">
-
-  <div class="bar" id="bar"><i id="fill"></i></div>
-  <div class="msg" id="msg"></div>
-
-  <div class="stats" id="stats">
-    <div class="stat"><small>File</small><strong id="sName" style="font-size:.95rem;word-break:break-all">–</strong></div>
-    <div class="stat"><small>Pages</small><strong id="sPages">0</strong></div>
-    <div class="stat"><small>Words</small><strong id="sWords">0</strong></div>
-    <div class="stat"><small>≈ Tokens</small><strong id="sTok">0</strong></div>
+<section id="how">
+  <div class="eyebrow">How it works</div>
+  <h2 class="serif">One document.<br>Many small pieces.</h2>
+  <div class="steps">
+    <div class="step on"><small>01</small><h3>Upload</h3><p>Choose a PDF. It never leaves your device.</p></div>
+    <div class="step on"><small>02</small><h3>Extract</h3><p>Text is read page by page, with page numbers as metadata.</p></div>
+    <div class="step on"><small>03</small><h3>Cut</h3><p>Pages are sliced into overlapping chunks you can size yourself.</p></div>
+    <div class="step soon"><small>04</small><h3>Embed</h3><p>Coming next: turn each chunk into a vector.</p></div>
+    <div class="step soon"><small>05</small><h3>Ask</h3><p>Coming next: retrieve, answer, and cite pages.</p></div>
   </div>
-  <div class="warn" id="warn"></div>
+</section>
 
-  <div class="actions" id="actions">
-    <button id="dl" class="pri">Download extracted JSON</button>
-    <button id="exp">Expand all</button>
-  </div>
-  <div class="pages" id="pages"></div>
+<section id="try">
+  <div class="eyebrow">Try it</div>
+  <h2 class="serif">Begin with a single PDF.</h2>
+  <div class="tool">
+    <label class="drop" id="drop" for="file"><b>Drop a PDF here</b><span>or tap to choose a file</span></label>
+    <input type="file" id="file" accept="application/pdf">
+    <div class="bar" id="bar"><i id="fill"></i></div>
+    <div class="msg" id="msg"></div>
 
-  <div class="note">
-    <b>What this step produces:</b> a list of <code>{page, text}</code> records. Page numbers are kept as metadata so answers can cite them later. Scanned PDFs have no text layer, so they would need OCR (flagged above if detected). Next: Step 2, chunking.
+    <div class="stats" id="stats">
+      <div class="stat"><small>File</small><strong id="sName" style="font-size:1rem;word-break:break-all">–</strong></div>
+      <div class="stat"><small>Pages</small><strong id="sPages">0</strong></div>
+      <div class="stat"><small>Words</small><strong id="sWords">0</strong></div>
+      <div class="stat"><small>≈ Tokens</small><strong id="sTok">0</strong></div>
+    </div>
+    <div class="warn" id="warn"></div>
+    <div class="row" id="actions" style="display:none"><button class="btn" id="dl">Download extracted JSON</button><button class="btn ghost" id="exp">Expand all pages</button></div>
+    <div id="pages"></div>
+
+    <div class="cut" id="cut">
+      <div class="eyebrow">Step 03</div>
+      <h2 class="serif" style="font-size:2.2rem;margin:.1em 0 .3em">Cut the paper</h2>
+      <div class="ctrl">
+        <label>Chunk size: <b id="vSize">500</b> tokens<input type="range" id="size" min="100" max="1000" step="50" value="500"></label>
+        <label>Overlap: <b id="vOv">100</b> tokens<input type="range" id="ov" min="0" max="300" step="10" value="100"></label>
+      </div>
+      <div class="stats" style="display:grid;margin:0 0 16px">
+        <div class="stat"><small>Chunks</small><strong id="cN">0</strong></div>
+        <div class="stat"><small>Avg tokens</small><strong id="cAvg">0</strong></div>
+      </div>
+      <div class="eyebrow">Document timeline</div>
+      <div class="tl" id="tl"></div>
+      <div class="tlcap">Each dashed cut is where one chunk ends. Numbers mark page starts.</div>
+      <div class="row"><button class="btn" id="dlc">Download chunks JSON</button></div>
+      <div class="slips" id="slips"></div>
+    </div>
   </div>
-</div>
+</section>
+
+<footer><span class="serif">Paper leaves traces. We read yours.</span>Step 3 of 7 · Next: embeddings, vector store, retrieval and chat.</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 <script>
 (function(){
   var $=function(i){return document.getElementById(i)};
-  var records=[], fileName="";
-  if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
-
+  var records=[],chunks=[],words=[],fileName="";
+  if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   var drop=$("drop");
   ["dragenter","dragover"].forEach(function(e){drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.add("over")})});
   ["dragleave","drop"].forEach(function(e){drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.remove("over")})});
   drop.addEventListener("drop",function(ev){var f=ev.dataTransfer.files[0];if(f)handle(f)});
   $("file").addEventListener("change",function(ev){var f=ev.target.files[0];if(f)handle(f)});
-
   function setMsg(t,err){var m=$("msg");m.textContent=t;m.className="msg"+(err?" err":"")}
+  function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
 
   async function handle(file){
     if(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name)){setMsg("Please choose a PDF file.",true);return}
     if(!window.pdfjsLib){setMsg("The PDF library didn’t load. Check your connection and reload.",true);return}
     records=[];fileName=file.name;
-    $("pages").innerHTML="";$("stats").style.display="none";$("actions").style.display="none";$("warn").style.display="none";
+    ["pages"].forEach(function(i){$(i).innerHTML=""});
+    ["stats","actions","warn","cut"].forEach(function(i){$(i).style.display="none"});
     $("bar").style.display="block";$("fill").style.width="0";setMsg("Reading file…");
     try{
-      var buf=await file.arrayBuffer();
-      var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+      var pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
       for(var p=1;p<=pdf.numPages;p++){
-        var page=await pdf.getPage(p);
-        var tc=await page.getTextContent();
-        var text="",lastY=null;
+        var tc=await (await pdf.getPage(p)).getTextContent(),text="",lastY=null;
         tc.items.forEach(function(it){
           var y=it.transform[5];
-          if(lastY!==null&&Math.abs(y-lastY)>2)text+="\n";
-          else if(text&&!/\s$/.test(text))text+=" ";
+          if(lastY!==null&&Math.abs(y-lastY)>2)text+="\n";else if(text&&!/\s$/.test(text))text+=" ";
           text+=it.str;lastY=y;
         });
-        text=text.replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
-        records.push({page:p,text:text});
+        records.push({page:p,text:text.replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim()});
         $("fill").style.width=Math.round(p/pdf.numPages*100)+"%";
-        setMsg("Extracting page "+p+" of "+pdf.numPages+"…");
+        setMsg("Reading page "+p+" of "+pdf.numPages+"…");
       }
       render();
     }catch(e){
@@ -129,28 +201,60 @@ button.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-w
   }
 
   function render(){
-    var words=0,empty=0,html="";
+    var total=0,empty=0,html="";
     records.forEach(function(r){
-      var w=r.text?r.text.split(/\s+/).length:0;words+=w;if(w<5)empty++;
-      var safe=r.text.replace(/&/g,"&amp;").replace(/</g,"&lt;");
-      html+='<details class="page"><summary>Page '+r.page+'<span>'+w+' words</span></summary><pre>'+(safe||"(no text found on this page)")+'</pre></details>';
+      var w=r.text?r.text.split(/\s+/).length:0;total+=w;if(w<5)empty++;
+      html+='<details class="page"><summary>Page '+r.page+'<span>'+w+' words</span></summary><pre>'+(esc(r.text)||"(no text found on this page)")+'</pre></details>';
     });
     $("pages").innerHTML=html;
     $("sName").textContent=fileName;$("sPages").textContent=records.length;
-    $("sWords").textContent=words.toLocaleString();$("sTok").textContent=Math.round(words*1.33).toLocaleString();
+    $("sWords").textContent=total.toLocaleString();$("sTok").textContent=Math.round(total*1.33).toLocaleString();
     $("stats").style.display="grid";$("actions").style.display="flex";$("bar").style.display="none";
-    setMsg("Done. Tap a page to see its text.");
+    setMsg("Done. Now cut it into chunks below.");
     if(empty>records.length/2){var w=$("warn");w.style.display="block";w.textContent="Most pages have little or no text. This looks like a scanned PDF, so you’ll need OCR (for example Tesseract) before chunking."}
+    $("cut").style.display="block";doChunk();
+    $("cut").scrollIntoView({behavior:"smooth",block:"start"});
   }
 
-  $("dl").addEventListener("click",function(){
-    var blob=new Blob([JSON.stringify({file:fileName,pages:records},null,2)],{type:"application/json"});
-    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fileName.replace(/\.pdf$/i,"")+"-extracted.json";a.click();
-  });
+  function doChunk(){
+    var size=+$("size").value,ov=+$("ov").value;
+    $("vSize").textContent=size;$("vOv").textContent=ov;
+    var W=Math.max(20,Math.round(size/1.33)),O=Math.min(Math.round(ov/1.33),W-10),step=W-O;
+    words=[];
+    records.forEach(function(r){r.text.split(/\s+/).forEach(function(w){if(w)words.push({w:w,p:r.page})})});
+    chunks=[];
+    for(var i=0;i<words.length;i+=step){
+      var sl=words.slice(i,i+W);
+      chunks.push({id:chunks.length+1,pages:[sl[0].p,sl[sl.length-1].p],tokens:Math.round(sl.length*1.33),start:i,text:sl.map(function(x){return x.w}).join(" ")});
+      if(i+W>=words.length)break;
+    }
+    var avg=chunks.length?Math.round(chunks.reduce(function(a,c){return a+c.tokens},0)/chunks.length):0;
+    $("cN").textContent=chunks.length;$("cAvg").textContent=avg;
+    // timeline
+    var N=words.length||1,tl="";
+    chunks.forEach(function(c,k){
+      var end=k<chunks.length-1?chunks[k+1].start:N;
+      tl+='<div class="seg" style="left:'+(c.start/N*100)+'%;width:'+((end-c.start)/N*100)+'%"></div>';
+    });
+    var seen={};
+    words.forEach(function(x,i){if(!seen[x.p]){seen[x.p]=1;tl+='<div class="tick" style="left:'+(i/N*100)+'%">'+x.p+'</div>'}});
+    $("tl").innerHTML=tl;
+    // slips
+    $("slips").innerHTML=chunks.map(function(c,k){
+      var pg=c.pages[0]===c.pages[1]?"p. "+c.pages[0]:"pp. "+c.pages[0]+"–"+c.pages[1];
+      return '<div class="slip" style="--dl:'+(Math.min(k,14)*0.05)+'s"><div class="m"><b>Chunk '+c.id+'</b><span>'+pg+' · ≈'+c.tokens+' tok</span></div><p>'+esc(c.text)+'</p></div>';
+    }).join("")||"<p class='msg'>No text to chunk.</p>";
+  }
+  $("size").addEventListener("input",doChunk);$("ov").addEventListener("input",doChunk);
+
+  function save(name,obj){
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}));
+    a.download=fileName.replace(/\.pdf$/i,"")+name;a.click();
+  }
+  $("dl").addEventListener("click",function(){save("-extracted.json",{file:fileName,pages:records})});
+  $("dlc").addEventListener("click",function(){save("-chunks.json",{file:fileName,chunks:chunks.map(function(c){return{id:c.id,pages:c.pages,tokens:c.tokens,text:c.text}})})});
   var open=false;
-  $("exp").addEventListener("click",function(){
-    open=!open;document.querySelectorAll(".page").forEach(function(d){d.open=open});$("exp").textContent=open?"Collapse all":"Expand all";
-  });
+  $("exp").addEventListener("click",function(){open=!open;document.querySelectorAll(".page").forEach(function(d){d.open=open});$("exp").textContent=open?"Collapse all pages":"Expand all pages"});
 })();
 </script>
 </body>
